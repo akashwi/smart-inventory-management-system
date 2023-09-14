@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use DateTime;
+use DateInterval;
 use Carbon\Carbon;
 use App\Models\Stations;
 use App\Models\Reservation;
@@ -72,34 +73,61 @@ class CalendarController extends Controller
 
     public function store(Request $request)
     {
-
         $station = Session::get('station');
         $userLoggedin = auth()->user();
 
-        $stringLength = Str::length($request['title']);
+        // Use this for title validation - TODO
+        // $stringLength = Str::length($request['title']);
 
         $request->validate([
-            'title' => 'required|regex:^E/\d{2}/\d{3}$^',
+            'start_date' => 'required',
+            'title' => ['required',
+                        'regex:/^E\/\d{2}\/\d{3}$/'],
+            'comments' => 'required'
         ]);
 
 
-        $date = $request->begin;
+        $date = $request->start_date;
+
+        $start_date = new DateTime($request->start_date);
+        $end_date = $start_date->add(new DateInterval('PT120M'));
+
+        // check whether input date is valid
+
+        if ($start_date->format('Y-m-d H:i:s') < date('Y-m-d H:i:s') || $start_date->format('H:i:s') < '08:00:00' || $end_date->format('H:i:s') > '17:00:00') {
+            return redirect('/stations/' . $station->id . '/reservations')->with('error', 'Unsuccessful. Invalid date');
+        }
+
+
+        // check for previous reservations
+
+        $reservations1 = Reservation::where('start_date', '<=', $start_date)
+            ->where('end_date', '>=', $start_date)
+            ->get();
+        
+        $reservations2 = Reservation::where('start_date', '<=', $end_date)
+            ->where('end_date', '>=', $end_date)
+            ->get();
+
+        if ($reservations1->count() > 0 || $reservations2->count() > 0) {
+            return redirect('/stations/' . $station->id . '/reservations')->with('error', 'Unsuccessful. That time is already reserved');
+        }
+
 
         // See if the user has already made a reservation on that day for this station
-        $bookings1 = Reservation::whereDate('start_date', $date)->where('user_id', $userLoggedin['id'])->where('station_id', $station->id)->get();
-
+        $bookings1 = Reservation::whereDate('start_date', Carbon::parse($start_date))->where('user_id', $userLoggedin['id'])->where('station_id', $station->id)->get();
 
         // If the user has not made a reservation before
-        if ($bookings1->isEmpty()) {
+        if ($bookings1->count() == 0) {
             $booking = Reservation::create([
 
                 'user_id' => $userLoggedin['id'],
                 'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
+                'end_date' => $end_date,
                 'station_id' => $station->id,
                 'E_numbers' => $request->title,
-                'duration' => $request->m,
-
+                'duration' => $request->duration,
+                'comments' => $request->comments
             ]);
 
             $color = null;
@@ -155,19 +183,20 @@ class CalendarController extends Controller
 
             //**********mails****************
 
-            return response()->json([
-                'id' => $booking->id,
-                'start' => $booking->start_date,
-                'end' => $booking->end_date,
-                'title' => $booking->title,
-                'station_id' => $station->id,
-                'color' => $color ? $color : '',
-            ]);
+            // return response()->json([
+            //     'id' => $booking->id,
+            //     'start' => $booking->start_date,
+            //     'end' => $booking->end_date,
+            //     'title' => $booking->title,
+            //     'station_id' => $station->id,
+            //     'color' => $color ? $color : '',
+            // ]);
+
+            return redirect('/stations/'. $station->id .'/reservations')->with('message', 'Reservation request successfull');
+
         } else {
             // Print message
-            return response()->json([
-                'error' => 'Unable to locate the event',
-            ], 404);
+            return redirect('/stations/'. $station->id .'/reservations')->with('error', 'Reservation already made');
         }
     }
 

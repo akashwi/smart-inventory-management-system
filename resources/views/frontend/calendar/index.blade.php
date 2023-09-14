@@ -366,20 +366,89 @@
         </div>
     </div>
 
+    @if (session()->has('message'))
+        <h4 class="bg-success text-center py-3">{{session('message')}}</h4> 
+    @endif
+
+    @if (session()->has('error'))
+        <h4 class="bg-danger text-center py-3">{{session('error')}}</h4> 
+    @endif
+    
+
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <h3 class="text-center mt-5"><b>Schedule Reservation - {{ $station->stationName }} </b><br></h3>
-                <h6 class="text-center">*Click and drag time period as required.<br>Click reservation to delete.
+                
+
+                {{-- old calender to create reservations ( If possible implement this in future) --}}
+
+                {{-- <h6 class="text-center">*Click and drag time period as required.<br>Click reservation to delete.
                     <br>Edit reservation by click and drag.
                 </h6>
 
                 <div class="col-md-11 offset-1 mb-3">
                     <fullcalendar-component :station-id="{{ $station->id }}" :user-id="{{ Auth()->user()->id }}" />
-                </div>
+                </div> --}}
+
+                
+
             </div>
         </div>
     </div>
+
+    
+
+    <section id="contact">
+        <div class="container-lg">
+          
+          <div class="text-center">
+            <p class="lead">Fill the following form</p>
+          </div>
+
+          <div class="row justify-content-center my-5">
+            <div class="col-lg-6">
+              
+              <form method="POST" action="/stations/{{$station->id}}/reservations/create">
+                @csrf
+                <label for="enumber" class="form-label">E Numbers:</label>
+                <div class="input-group mb-4">
+                  <input type="text" id="enumber" name="title" class="form-control" placeholder="E/XX/XXX, E/XX/XXX, ..." />
+                </div>
+
+                <div class="row mb-4">
+                    <label for="inputdate" class="col-sm-4 col-form-label">Select Date & Time:</label>
+                    <div class="col-sm-8">
+                      <input type="datetime-local" class="form-control" id="inputdate" name="start_date">
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <label for="inputduration" class="col-sm-4 col-form-label">Select Duration:</label>
+                    <div class="col-sm-8">
+                      <select class="form-select" aria-label="Default select example" id="inputduration" name="duration">
+                        <option selected value="120">2 Hours</option>
+                        <option value="180">3 Hours</option>
+                        <option value="240">4 Hours</option>
+                        <option value="300">5 Hours</option>
+                      </select>
+                    </div>
+                </div>
+
+                <div class="mb-4 mt-5 form-floating">
+                  <textarea class="form-control" id="query" style="height: 140px" placeholder="query" name="comments"></textarea>
+                  <label for="query">Your Comment...</label>
+                </div>
+                <div class="mb-4 text-center">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
 
 @endsection
 

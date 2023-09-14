@@ -53,6 +53,9 @@ Route::middleware(['auth'])->group(function () {
                 ->push(__('Delete'));
         });
 
+    // Create
+    Route::post('/stations/{station}/reservations/create', [CalendarController::class, 'store']);
+
 
     // API Routes
 
