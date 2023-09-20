@@ -51,6 +51,7 @@
                             <th>End Date & Time</th>
                             <th>Duration<br>(in minutes)</th>
                             <th>Team</th>
+                            <th>Status</th>
                             <th>&nbsp;</th>
                         </tr>
 
@@ -68,6 +69,15 @@
                                 <td>{{ $res->end_date }}</td>
                                 <td>{{ $res->duration }}</td>
                                 <td>{{ $res->E_numbers }}</td>
+                                <td>
+                                    @if($res->status == "approved")
+                                        <span class="text-success">Approved</span>
+                                    @elseif($res->status == "rejected")
+                                        <span class="text-danger">Rejected</span>                                        
+                                    @else
+                                        <span class="text-primary">Pending</span>                                        
+                                    @endif
+                                </td>
                                
                                 <td>
 

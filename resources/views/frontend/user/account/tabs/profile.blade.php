@@ -7,7 +7,7 @@
 
         <tr>
             <th>@lang('Avatar')</th>
-            <td><img src="{{ $logged_in_user->avatar }}" class="user-profile-image" /></td>
+            <td><img src="https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG-Free-Download.png" class="user-profile-image" /></td>
         </tr>
 
         <tr>

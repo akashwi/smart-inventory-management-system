@@ -10,7 +10,7 @@
         }
 
         .fc-event {
-            font-size: 14px;
+            font-size: 12px;
             border-radius: 1px !important;
         }
     </style>
@@ -62,12 +62,23 @@
                 },
 
                 eventRender: function eventRender(event, element, view) {
+
                     $("#calendar .fc-title").each(function (i) {
                         $(this).html($(this).text());
                     });
                 },
 
                 editable: false,
+                businessHours: {
+                    daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Sunday to Saturday
+                    startTime: '07:00', // 8 AM
+                    endTime: '17:00',   // 5 PM
+                },
+                views: {
+                    agendaWeek: {
+                        allDaySlot: false, // Display the entire week including weekends
+                    }
+                }
             });
 
         });

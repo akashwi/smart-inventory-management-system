@@ -54,7 +54,8 @@ class StationController extends Controller
                 'end' => $booking->end_date,
                 'stationId' => $stations->id,
                 'auth' => $booking->user_id,
-                'color' => $color,
+                'color' => '#0058ab',
+                'textColor' => 'white'
             ];
         }
 

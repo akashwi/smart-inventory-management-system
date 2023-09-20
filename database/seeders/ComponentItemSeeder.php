@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ComponentItem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -26,5 +27,7 @@ class ComponentItemSeeder extends Seeder
         }
 
         $this->command->info('Inserted ' . count($this->data) . ' records to component_items table');
+
+        ComponentItem::factory(20)->create();
     }
 }

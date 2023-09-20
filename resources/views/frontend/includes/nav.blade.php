@@ -61,7 +61,7 @@
                         >
                             <x-slot name="text">
                                 <img class="rounded-circle" style="max-height: 20px"
-                                     src="{{ $logged_in_user->avatar }}"/>
+                                     src="https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG-Free-Download.png"/>
                                 {{ $logged_in_user->name }} <span class="caret"></span>
                             </x-slot>
                         </x-utils.link>

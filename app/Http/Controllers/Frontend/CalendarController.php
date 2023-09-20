@@ -32,10 +32,11 @@ class CalendarController extends Controller
 
         foreach ($bookings as $booking) {
             if ($booking->user_id != $userLoggedin['id']) {
-                $color = '#435258';
+                $color = 'blue';
             } else {
                 $color = '#3E9CC2';
             }
+
             $userVar = User::find($booking->user_id);
             $events[] = [
                 'id' => $booking->id,
@@ -61,7 +62,7 @@ class CalendarController extends Controller
             $userVar = User::find($booking->user_id);
             $events[] = [
                 'id' => $booking->id,
-                'title' => 'Reservation made by ' . $userVar->email . '  for  ' . $booking->E_numbers,
+                'title' => 'Reservation made by ' . $userVar->email . '  for ' . $booking->E_numbers,
                 'start' => $booking->start_date,
                 'end' => $booking->end_date,
                 'stationId' => $station->id,
@@ -81,11 +82,14 @@ class CalendarController extends Controller
 
         $request->validate([
             'start_date' => 'required',
-            'title' => ['required',
+            'title1' => ['required',
+                        'regex:/^E\/\d{2}\/\d{3}$/'],
+            'title2' => ['required',
                         'regex:/^E\/\d{2}\/\d{3}$/'],
             'comments' => 'required'
         ]);
 
+        $request['title'] = $request->title1 . ', ' . $request->title2;
 
         $date = $request->start_date;
 
@@ -142,8 +146,8 @@ class CalendarController extends Controller
             // it will be only executed in a web server.
             // Environment can be setup in the .env file
 
-            if (App::environment(['local', 'staging'])) {
-                // dd('Not sending emails');
+            if (App::environment(['staging'])) {
+                dd('Not sending emails');
             } else {
 
                 try {
@@ -151,7 +155,7 @@ class CalendarController extends Controller
 
                     foreach ($enums as $enum) {
 
-                        //get enumber
+                        // get enumber
                         $enum1 = explode('/', $enum);
                         $batch = $enum1[1];
                         $regnum = $enum1[2];
@@ -166,16 +170,20 @@ class CalendarController extends Controller
                         //extract email address
                         $email = ($response['emails']['faculty']['name'] . '@' . $response['emails']['faculty']['domain']);
 
+                        // $email = 'e19453@eng.pdn.ac.lk';
+
                         //get user
                         $user = auth()->user();
 
                         //send mail
                         Mail::to($email)
                             ->send(new StationReservationMail(auth()->user(), $station, $booking));
+
                     }
                 } catch (\Exception $e) {
                     return response()->json([
-                        'error' => 'enumber null'
+                        'code' => $e->getCode(), // Include the exception code
+                        'message' => $e->getMessage(), // Include the exception message
                     ], 404);
                 }
             }

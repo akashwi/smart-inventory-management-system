@@ -367,11 +367,26 @@
     </div>
 
     @if (session()->has('message'))
-        <h4 class="bg-success text-center py-3">{{session('message')}}</h4> 
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+            </svg>
+            <strong class="p-2">Success!</strong> {{session('message')}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
     @if (session()->has('error'))
-        <h4 class="bg-danger text-center py-3">{{session('error')}}</h4> 
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-circle" viewBox="0 0 16 16" role="img" aria-label="Success:">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+            </svg>
+            <strong class="p-2">Error!</strong> {{session('error')}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
     
 
@@ -397,7 +412,7 @@
         </div>
     </div>
 
-    
+    {{-- new form for component reservation --}}
 
     <section id="contact">
         <div class="container-lg">
@@ -412,8 +427,34 @@
               <form method="POST" action="/stations/{{$station->id}}/reservations/create">
                 @csrf
                 <label for="enumber" class="form-label">E Numbers:</label>
+
+                {{-- convert email to e number --}}
+                @php
+                    $useremail = $logged_in_user->email;
+
+                    function convertEmailToENumber($email){
+                        // Use a regular expression to extract the batch and registration numbers
+                        if (preg_match('/^e(\d{2})(\d{3})@eng.pdn.ac.lk$/', strtolower($email), $matches)) {
+                            $batch = $matches[1];
+                            $regnum = $matches[2];
+                            return "E/$batch/$regnum";
+                        }
+                        return null; // Invalid email format
+                    }
+
+                    $enum = convertEmailToENumber($useremail);
+                @endphp
+
                 <div class="input-group mb-4">
-                  <input type="text" id="enumber" name="title" class="form-control" placeholder="E/XX/XXX, E/XX/XXX, ..." />
+                  <input type="text" id="enumber" name="title1" class="form-control" placeholder="{{ $enum }}" value="{{ $enum }}" readonly/>
+                </div>
+
+                <div class="input-group mb-4">
+                <input type="text" id="enumber" name="title2" class="form-control" placeholder="E/XX/XXX" />
+                </div>
+
+                <div class="input-group mb-4">
+                <input type="text" id="enumber" name="title3" class="form-control" placeholder="E/XX/XXX" />
                 </div>
 
                 <div class="row mb-4">

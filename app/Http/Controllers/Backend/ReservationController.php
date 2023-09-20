@@ -9,11 +9,16 @@ use Carbon\Carbon;
 use App\Models\Stations;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+
+
+
 use App\Http\Controllers\Controller;
-
-
-
+use App\Mail\StationReservationMail;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\StationConfirmationMail;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -262,11 +267,65 @@ class ReservationController extends Controller
             
         ];
 
+        if($data['status'] == 'approved'){
             $reservation->update($data);
-            return redirect()->route('admin.reservation.index')->with('Success', 'Reservation status was saved !');            
-     
+
+            $station = Stations::find($reservation->station_id);
+            $booking = $reservation;
+
+            // sending email stating that reservation has approved
+
+            if (App::environment(['staging'])) {
+                dd('Not sending emails');
+            } else {
+            try {
+                $enums = explode(',', $booking->E_numbers);
+
+                foreach ($enums as $enum) {
+
+                    // get enumber
+                    $enum1 = explode('/', $enum);
+                    $batch = $enum1[1];
+                    $regnum = $enum1[2];
+
+                    //set api url
+                    $apiurl = 'https://api.ce.pdn.ac.lk/people/v1/students/E' . '' . $batch . '/' . $regnum . '/';
+
+                    //api call
+                    $response = Http::withoutVerifying()
+                        ->get($apiurl);
+
+                    //extract email address
+                    $email = ($response['emails']['faculty']['name'] . '@' . $response['emails']['faculty']['domain']);
+
+                    // $email = 'e19453@eng.pdn.ac.lk';
+
+                    //get user
+                    $user = auth()->user();
+
+                    //send mail
+                    Mail::to($email)
+                        ->send(new StationConfirmationMail(auth()->user(), $station, $booking));
+
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'error' => 'enumber null',
+                    'code' => $e->getCode(), // Include the exception code
+                    'message' => $e->getMessage(), // Include the exception message
+                ], 404);
+            }
+        }
 
 
+
+            return redirect()->route('admin.reservation.index')->with('Success', 'Reservation status was saved !'); 
+        }
+        else {
+            $reservation->delete();
+            return redirect()->route('admin.reservation.index')->with('Success', 'Reservation was deleted !');
+        }
+                       
     }
 
     public function isAnOverlapEvent(DateTime $eventStartDay, DateTime $eventEndDay, Reservation $res)
